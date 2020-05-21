@@ -283,4 +283,4 @@ tokyo_ramen_review = Tabelog(base_url="https://tabelog.com/tokyo/rstLst/ramen/",
 # CSV保存
 # tokyo_ramen_review.df.to_csv("./tokyo_ramen_review.csv")
 # HTML保存
-tokyo_ramen_review.df.to_html("./dist/index.html")
+tokyo_ramen_review.df.to_html("./index.html")
