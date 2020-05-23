@@ -103,7 +103,7 @@ class Tabelog:
         store_name_tag = soup.find('h2', class_='display-name')
         store_name = store_name_tag.span.string
         print('{}→店名：{}'.format(self.store_id_num, store_name.strip()), end='')
-        self.store_name = store_name.strip()
+        self.store_name = self.a_tag(item_url, store_name.strip())
 
         # ラーメン屋、つけ麺屋以外の店舗は除外
         # 店舗情報のヘッダー枠データ取得
@@ -146,22 +146,25 @@ class Tabelog:
             div_list = td.find_all('div', class_='rstinfo-sns-table')
             if len(div_list) > 0:
                 for span in div_list[0].find_all('span'):
-                    self.store_page = '{} {}'.format(self.store_page, span.text)
+                    self.store_page = '{} {}'.format(
+                        self.store_page, self.sns_str(span.text))
             # <p class="homepage">
             p_list = td.find_all('p', class_='homepage')
             if len(p_list) > 0:
                 for span in p_list[0].find_all('span'):
-                    self.store_page = '{} {}'.format(self.store_page, span.text)
+                    self.store_page = '{} {}'.format(
+                        self.store_page, self.a_tag(span.text, '公式ページ'))
 
             # 地図URL
             # <div class="rstinfo-table__map-wrap">
             div_list = td.find_all('div', class_='rstinfo-table__map-wrap')
             if len(div_list) > 0:
-                self.map_url = div_list[0].find_all('a')[0].get('href')
+                self.map_url = self.a_tag(
+                    div_list[0].find_all('a')[0].get('href'), '地図')
 
         print(self.biz_hours)
-        print('公式ページ：{}'.format(self.store_page), end='')
-        print('  地図：{}'.format(self.map_url), end='')
+        # print('公式ページ：{}'.format(self.store_page), end='')
+        # print('  地図：{}'.format(self.map_url), end='')
 
         # 評価点数取得
         # <b class="c-rating__val rdheader-rating__score-val" rel="v:rating">
@@ -278,9 +281,22 @@ class Tabelog:
         self.df = self.df.append(se, self.columns)  # データフレームに行を追加
         return
 
+    def a_tag(self, href, label):
+        return '<a href="{}">{}</a>'.format(href, label)
+
+    def sns_str(self, url):
+        if 'twitter' in url:
+            return self.a_tag(url, 'twitter')
+        elif 'facebook' in url:
+            return self.a_tag(url, 'facebook')
+        elif 'instagram' in url:
+            return self.a_tag(url, 'instagram')
+        else:
+            return url
+
 
 tokyo_ramen_review = Tabelog(base_url="https://tabelog.com/tokyo/rstLst/ramen/", test_mode=False, p_ward='東京都内')
 # CSV保存
 # tokyo_ramen_review.df.to_csv("./tokyo_ramen_review.csv")
 # HTML保存
-tokyo_ramen_review.df.to_html("./index.html")
+tokyo_ramen_review.df.to_html("./index.html", escape=False)
