@@ -27,7 +27,7 @@ class Tabelog:
         # self.review_cnt = 0
         # self.review = ''
         # self.columns = ['store_id', 'store_name', 'score', 'ward', 'review_cnt', 'review']
-        self.columns = ['store_id', 'store_name', 'score', 'station', 'day_off', 'biz_hours', 'store_page', 'map_url']
+        self.columns = ['店名', '点数', '最寄り駅', '休み', '営業時間', 'Webページ', '地図']
         self.df = pd.DataFrame(columns=self.columns)
         self.__regexcomp = re.compile(r'\n|\s')  # \nは改行、\sは空白
 
@@ -136,10 +136,12 @@ class Tabelog:
             # <p class="rstinfo-table__subject">営業時間</p>
             p_list = td.find_all('p', class_='rstinfo-table__subject')
             if len(p_list) > 0 and p_list[0].text == '営業時間':
+                # "営業時間"より前を削除、"定休日"以降を削除
+                bh = td.text[td.text.find('営業時間'):td.text.find('定休日')]
+                # 改行の変換
+                bh = re.sub(r'\n', '<br/>', bh)
                 # 連続する空白文字を空白１つにする
-                self.biz_hours = re.sub(r'\s+', ' ', td.text)
-                # "定休日"以降を削除
-                self.biz_hours = self.biz_hours[0:self.biz_hours.find('定休日')]
+                self.biz_hours = re.sub(r'\s+', ' ', bh)
 
             # 公式ページ
             # <div class="rstinfo-sns-table">
@@ -277,7 +279,7 @@ class Tabelog:
     def make_df(self):
         self.store_id = str(self.store_id_num).zfill(8)  # 0パディング
         # se = pd.Series([self.store_id, self.store_name, self.score, self.ward, self.review_cnt, self.review], self.columns) # 行を作成
-        se = pd.Series([self.store_id, self.store_name, self.score, self.station, self.day_off, self.biz_hours, self.store_page, self.map_url], self.columns)
+        se = pd.Series([self.store_name, self.score, self.station, self.day_off, self.biz_hours, self.store_page, self.map_url], self.columns)
         self.df = self.df.append(se, self.columns)  # データフレームに行を追加
         return
 
