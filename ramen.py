@@ -136,10 +136,14 @@ class Tabelog:
             # <p class="rstinfo-table__subject">営業時間</p>
             p_list = td.find_all('p', class_='rstinfo-table__subject')
             if len(p_list) > 0 and p_list[0].text == '営業時間':
+                # 内部HTMLの取得
+                bh = td.decode_contents(formatter="html")
                 # "営業時間"より前を削除、"定休日"以降を削除
-                bh = td.text[td.text.find('営業時間'):td.text.find('定休日')]
-                # 改行の変換
-                bh = re.sub(r'\n', '<br/>', bh)
+                bh = bh[bh.find('営業時間'):bh.find('定休日')]
+                # 改行を空白に変換
+                bh = re.sub(r'\n', '　', bh)
+                # タグを空白に変換(最短マッチ)
+                bh = re.sub('<.*?>', '　', bh)
                 # 連続する空白文字を空白１つにする
                 self.biz_hours = re.sub(r'\s+', ' ', bh)
 
